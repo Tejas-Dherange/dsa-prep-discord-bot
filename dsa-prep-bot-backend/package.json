@@ -8,6 +8,7 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "bot": "node src/bot/index.js",
+    "deploy-commands": "node src/bot/deployCommands.js",
     "seed": "node src/scripts/seedProblems.js",
     "seed-data": "node src/scripts/seedData.js"
   },

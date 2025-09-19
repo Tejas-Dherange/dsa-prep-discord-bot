@@ -212,8 +212,8 @@ const postDailyChallenge = async () => {
 // Schedule daily challenge for 10:00 AM every day
 // Cron format: second minute hour day month dayOfWeek
 const startDailyChallengeJob = () => {
-  // Run at 10:33 AM every day
-  cron.schedule('0 33 10 * * *', () => {
+  // Run at 02:10 PM every day
+  cron.schedule('0 10 14 * * *', () => {
     logger.info('Running daily challenge cron job');
     postDailyChallenge();
   }, {
