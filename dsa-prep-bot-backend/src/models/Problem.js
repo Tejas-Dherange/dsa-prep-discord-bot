@@ -153,7 +153,7 @@ problemSchema.virtual('difficultyScore').get(function() {
 
 // Virtual for popularity score
 problemSchema.virtual('popularityScore').get(function() {
-  return this.usersSolved.length;
+  return this.usersSolved ? this.usersSolved.length : 0;
 });
 
 // Indexes for better query performance
@@ -166,6 +166,11 @@ problemSchema.index({ 'usersSolved.length': -1 });
 
 // Instance methods
 problemSchema.methods.markAsSolved = function(userId, timeSpent = 0, attempts = 1) {
+  // Initialize usersSolved array if it doesn't exist
+  if (!this.usersSolved) {
+    this.usersSolved = [];
+  }
+  
   // Check if user already solved this problem
   const existingSolution = this.usersSolved.find(
     solved => solved.userId.toString() === userId.toString()
@@ -192,6 +197,11 @@ problemSchema.methods.markAsSolved = function(userId, timeSpent = 0, attempts = 
 };
 
 problemSchema.methods.addHint = function(hint) {
+  // Initialize hints array if it doesn't exist
+  if (!this.hints) {
+    this.hints = [];
+  }
+  
   if (!this.hints.includes(hint)) {
     this.hints.push(hint);
   }
