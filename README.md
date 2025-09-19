@@ -260,7 +260,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - **Issues**: [GitHub Issues](https://github.com/Tejas-Dherange/dsa-prep-discord-bot/issues)
 - **Discord**: Join our support server
-- **Email**: [Your support email]
+- **Email**: tejudherange2182@gmail.com
 
 ## 🙏 Acknowledgments
 
