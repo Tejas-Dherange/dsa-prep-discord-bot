@@ -27,12 +27,12 @@ const Sidebar: React.FC = () => {
 
       {/* Sidebar */}
       <div className={`
-        fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0
+        fixed inset-y-0 left-0 z-50 w-64 bg-white/80 backdrop-blur-md shadow-xl border-r border-white/20 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0
         ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="flex items-center justify-center h-16 px-4 bg-primary-600">
+          <div className="flex items-center justify-center h-16 px-4 bg-gradient-to-r from-blue-600 to-indigo-600">
             <h1 className="text-xl font-bold text-white">DSA Prep Bot</h1>
           </div>
 
@@ -58,11 +58,11 @@ const Sidebar: React.FC = () => {
           </nav>
 
           {/* User info */}
-          <div className="px-4 py-4 border-t border-gray-200">
+          <div className="px-4 py-4 border-t border-gray-200/50 bg-gradient-to-r from-blue-50/50 to-indigo-50/50">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
-                  <span className="text-primary-600 font-semibold text-sm">
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center">
+                  <span className="text-white font-semibold text-sm">
                     A
                   </span>
                 </div>

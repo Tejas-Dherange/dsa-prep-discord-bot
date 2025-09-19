@@ -113,7 +113,7 @@
   }
 
   .quick-action-card {
-    @apply bg-white/80 backdrop-blur-sm p-4 rounded-xl border border-gray-100/50 hover:border-blue-200 hover:bg-gradient-to-br hover:from-blue-50/50 hover:to-indigo-50/50 transition-all duration-300 group cursor-pointer transform hover:scale-105 shadow-sm hover:shadow-lg;
+    @apply bg-white/80 backdrop-blur-sm p-4 rounded-xl border border-gray-100/50 hover:border-blue-200 hover:bg-gradient-to-br hover:from-blue-50/50 hover:to-indigo-50/50 transition-all duration-300 cursor-pointer transform hover:scale-105 shadow-sm hover:shadow-lg;
   }
 }
 
