@@ -1,5 +1,6 @@
 import { client, logger } from '../config/discordClient.js';
 import { startDailyChallengeJob } from './jobs/dailyChallenge.js';
+import { startThreadCleanupScheduler } from './jobs/threadCleanup.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -53,6 +54,7 @@ const initializeBot = async () => {
     
     // Start cron jobs
     startDailyChallengeJob();
+    startThreadCleanupScheduler();
     
     // Login to Discord
     await client.login(process.env.BOT_TOKEN);

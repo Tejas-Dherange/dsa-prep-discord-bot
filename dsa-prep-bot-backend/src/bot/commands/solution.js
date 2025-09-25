@@ -80,11 +80,11 @@ export default {
           .setColor(0xff9500)
           .setTitle('👋 Welcome!')
           .setDescription('You haven\'t submitted any solutions yet!')
-          .addFields({
+          .addFields([{
             name: '🚀 Get Started',
             value: `Submit your first solution in <#${SOLUTION_CONFIG.REVIEW_CHANNEL_ID}> to see your stats here!`,
             inline: false
-          });
+          }]);
 
         await interaction.reply({ embeds: [noUserEmbed] });
         return;
@@ -99,11 +99,11 @@ export default {
             .setColor(0xff9500)
             .setTitle('📊 Your Solution Stats')
             .setDescription('No submissions yet!')
-            .addFields({
+            .addFields([{
               name: '🚀 Get Started',
               value: `Submit your first solution in <#${SOLUTION_CONFIG.REVIEW_CHANNEL_ID}>!`,
               inline: false
-            });
+            }]);
 
           await interaction.reply({ embeds: [noStatsEmbed] });
           return;
@@ -172,11 +172,11 @@ export default {
             .setColor(0xff9500)
             .setTitle('📝 Recent Reviews')
             .setDescription('No recent submissions found!')
-            .addFields({
+            .addFields([{
               name: '🚀 Get Started',
               value: `Submit solutions in <#${SOLUTION_CONFIG.REVIEW_CHANNEL_ID}> to see them here!`,
               inline: false
-            });
+            }]);
 
           await interaction.reply({ embeds: [noRecentEmbed] });
           return;
@@ -194,14 +194,14 @@ export default {
           const scoreText = submission.score ? `${submission.score}/10` : 'Unrated';
           const statusEmoji = submission.status === 'Accepted' ? '✅' : '⏳';
           
-          recentEmbed.addFields({
+          recentEmbed.addFields([{
             name: `${index + 1}. ${statusEmoji} ${submission.problemId.title}`,
             value: `**Language:** ${submission.language}
 **Score:** ${scoreText}
 **Difficulty:** ${submission.problemId.difficulty}
 **Submitted:** ${submission.submissionTime.toLocaleDateString()}`,
             inline: true
-          });
+          }]);
         });
 
         recentEmbed.setFooter({ text: `Showing ${recentSubmissions.length} recent submissions` });

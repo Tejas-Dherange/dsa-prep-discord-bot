@@ -69,6 +69,18 @@ const userSchema = new mongoose.Schema({
     hard: { type: Number, default: 0 }
   },
   
+  // Hint and AI usage statistics
+  stats: {
+    hintsRequested: { type: Number, default: 0 },
+    aiHintsUsed: { type: Number, default: 0 },
+    fallbackHintsUsed: { type: Number, default: 0 },
+    problemsWithHints: [{ 
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: 'Problem' 
+    }],
+    lastHintRequestAt: { type: Date, default: null }
+  },
+  
   // Preferences
   preferredDifficulty: {
     type: String,
@@ -193,6 +205,36 @@ userSchema.methods.addSolvedProblem = function(problemId, difficulty, timeSpent 
   
   // Update streak
   this.updateStreak();
+};
+
+userSchema.methods.recordHintUsage = function(problemId, isAI = false, isFallback = false) {
+  // Initialize stats if not exists
+  if (!this.stats) {
+    this.stats = {
+      hintsRequested: 0,
+      aiHintsUsed: 0,
+      fallbackHintsUsed: 0,
+      problemsWithHints: [],
+      lastHintRequestAt: null
+    };
+  }
+  
+  // Update hint statistics
+  this.stats.hintsRequested += 1;
+  this.stats.lastHintRequestAt = new Date();
+  
+  if (isAI) {
+    this.stats.aiHintsUsed += 1;
+  }
+  
+  if (isFallback) {
+    this.stats.fallbackHintsUsed += 1;
+  }
+  
+  // Add problem to hints history (allow duplicates for multiple hints on same problem)
+  this.stats.problemsWithHints.push(problemId);
+  
+  this.lastActive = new Date();
 };
 
 // Static methods

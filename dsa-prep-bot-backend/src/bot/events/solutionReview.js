@@ -8,6 +8,7 @@ import {
   createReviewEmbed,
   saveSubmission
 } from '../services/solutionValidator.js';
+import { createOrFindUserThread, sendThreadMessage } from '../../utils/discordUtils.js';
 
 const SOLUTION_REVIEW_CHANNEL_ID = SOLUTION_CONFIG.REVIEW_CHANNEL_ID;
 
@@ -65,6 +66,9 @@ export default {
         try {
           logger.info(`Validating solution for ${problem.title} by ${message.author.username}`);
           
+          // Create or find user's solution thread
+          const solutionThread = await createOrFindUserThread(message.channel, message.author, 'Solutions');
+          
           // Validate the solution using AI
           const review = await validateSolution(codeBlock.code, problem, codeBlock.language);
           
@@ -74,6 +78,8 @@ export default {
           
           // Create review embed
           const reviewEmbed = createReviewEmbed(message.author, problem, codeBlock, review, score);
+          
+          let reviewMessage;
           
           // Check if embed is too large, if so, send as multiple messages
           const embedSize = JSON.stringify(reviewEmbed).length;
@@ -89,41 +95,47 @@ export default {
               timestamp: reviewEmbed.timestamp
             };
             
-            await message.reply({
-              embeds: [simpleEmbed]
-            });
-            
-            // Send full review as a text message
-            const reviewMessage = await message.reply({
-              content: `**🎯 Full AI Review:**\n\`\`\`\n${review.substring(0, 1900)}\n\`\`\`${review.length > 1900 ? '\n*Review truncated due to length limits.*' : ''}`
-            });
-            
-            // Add reactions to the review message
-            if (score) {
-              const reactions = getScoreReactions(score);
-              for (const reaction of reactions) {
-                try {
-                  await reviewMessage.react(reaction);
-                } catch (reactionError) {
-                  logger.warn(`Failed to add reaction ${reaction}:`, reactionError.message);
-                }
-              }
+            if (solutionThread) {
+              // Send to thread if available
+              await sendThreadMessage(solutionThread, { embeds: [simpleEmbed] });
+              reviewMessage = await sendThreadMessage(solutionThread, {
+                content: `**🎯 Full AI Review:**\n\`\`\`\n${review.substring(0, 1900)}\n\`\`\`${review.length > 1900 ? '\n*Review truncated due to length limits.*' : ''}`
+              });
+              
+              // Also send a summary to the main channel
+              await message.reply({
+                content: `✅ **Solution reviewed!** Check your private thread: ${solutionThread.toString()}\n\n**Quick Summary:** Score ${score}/10 - ${score >= 7 ? 'Great work!' : score >= 5 ? 'Good progress!' : 'Keep improving!'}`
+              });
+            } else {
+              // Fallback to main channel if thread creation fails
+              await message.reply({ embeds: [simpleEmbed] });
+              reviewMessage = await message.reply({
+                content: `**🎯 Full AI Review:**\n\`\`\`\n${review.substring(0, 1900)}\n\`\`\`${review.length > 1900 ? '\n*Review truncated due to length limits.*' : ''}`
+              });
             }
           } else {
-            // Send the normal embed
-            const reviewMessage = await message.reply({
-              embeds: [reviewEmbed]
-            });
-            
-            // Add score-based reactions
-            if (score) {
-              const reactions = getScoreReactions(score);
-              for (const reaction of reactions) {
-                try {
-                  await reviewMessage.react(reaction);
-                } catch (reactionError) {
-                  logger.warn(`Failed to add reaction ${reaction}:`, reactionError.message);
-                }
+            if (solutionThread) {
+              // Send the normal embed to thread
+              reviewMessage = await sendThreadMessage(solutionThread, { embeds: [reviewEmbed] });
+              
+              // Send summary to main channel
+              await message.reply({
+                content: `✅ **Solution reviewed!** Check your private thread: ${solutionThread.toString()}\n\n**Quick Summary:** Score ${score}/10 - ${getQuickFeedback(score)}`
+              });
+            } else {
+              // Fallback to main channel if thread creation fails
+              reviewMessage = await message.reply({ embeds: [reviewEmbed] });
+            }
+          }
+          
+          // Add score-based reactions to the review message
+          if (score && reviewMessage) {
+            const reactions = getScoreReactions(score);
+            for (const reaction of reactions) {
+              try {
+                await reviewMessage.react(reaction);
+              } catch (reactionError) {
+                logger.warn(`Failed to add reaction ${reaction}:`, reactionError.message);
               }
             }
           }
@@ -139,7 +151,7 @@ export default {
             // Ignore removal errors
           }
           
-          logger.info(`Solution review completed for ${message.author.username}`);
+          logger.info(`Solution review completed for ${message.author.username} in ${solutionThread ? 'thread' : 'main channel'}`);
           
         } catch (error) {
           logger.error('Error processing code block:', error);
@@ -164,3 +176,16 @@ Please try again or contact an admin if the issue persists.`,
     }
   },
 };
+
+/**
+ * Get quick feedback message based on score
+ * @param {number} score - Solution score (1-10)
+ * @returns {string} - Quick feedback message
+ */
+function getQuickFeedback(score) {
+  if (score >= 8) return 'Excellent solution! 🎉';
+  if (score >= 7) return 'Great work! 👍';
+  if (score >= 5) return 'Good progress! Keep it up! 💪';
+  if (score >= 3) return 'Room for improvement, but you\'re learning! 📚';
+  return 'Keep practicing, you\'ve got this! 🚀';
+}

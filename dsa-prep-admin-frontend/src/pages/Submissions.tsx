@@ -16,8 +16,11 @@ const Submissions: React.FC = () => {
         sortBy: 'submissionTime',
         sortOrder: 'desc'
       });
+
+      // console.log("Fetched Submissions:", response);
+      
       if (response.success) {
-        return response.data;
+        return response;
       }
       throw new Error(response.message || 'Failed to fetch submissions');
     },

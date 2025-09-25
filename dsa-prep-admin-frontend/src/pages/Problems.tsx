@@ -20,8 +20,11 @@ const Problems: React.FC = () => {
         sortBy,
         sortOrder
       });
+
+      // console.log("Fetched Problems:", response);
+      
       if (response.success) {
-        return response.data;
+        return response;
       }
       throw new Error(response.message || 'Failed to fetch problems');
     },

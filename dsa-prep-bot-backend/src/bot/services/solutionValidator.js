@@ -251,12 +251,52 @@ const saveSubmission = async (discordUser, problem, codeBlock, review, score = n
       user = new User({
         discordId: discordUser.id,
         username: discordUser.username,
-        discriminator: discordUser.discriminator,
         avatar: discordUser.avatar,
         joinedAt: new Date()
       });
       await user.save();
     }
+    
+    // Extract score from review if not provided
+    let finalScore = score;
+    if (!finalScore) {
+      // Enhanced score extraction patterns
+      const scorePatterns = [
+        /score[:\s]*(\d+(?:\.\d+)?)\s*\/?\s*10/gi,
+        /rating[:\s]*(\d+(?:\.\d+)?)\s*\/?\s*10/gi,
+        /(\d+(?:\.\d+)?)\s*\/\s*10/gi,
+        /score[:\s]*(\d+(?:\.\d+)?)/gi,
+        /rating[:\s]*(\d+(?:\.\d+)?)/gi
+      ];
+      
+      for (const pattern of scorePatterns) {
+        const match = review.match(pattern);
+        if (match) {
+          finalScore = parseFloat(match[1]);
+          if (finalScore >= 0 && finalScore <= 10) {
+            break;
+          }
+          finalScore = null; // Invalid score, continue searching
+        }
+      }
+      
+      // If still no score found, assign a default based on basic heuristics
+      if (finalScore === null) {
+        const reviewLower = review.toLowerCase();
+        if (reviewLower.includes('excellent') || reviewLower.includes('perfect')) {
+          finalScore = 8;
+        } else if (reviewLower.includes('good') || reviewLower.includes('correct')) {
+          finalScore = 7;
+        } else if (reviewLower.includes('decent') || reviewLower.includes('works')) {
+          finalScore = 6;
+        } else {
+          finalScore = 5; // Default middle score
+        }
+      }
+    }
+    
+    // Determine status based on score (lowered threshold for better acceptance rate)
+    const isAccepted = finalScore && finalScore >= 6; // Lowered from 7 to 6
     
     // Create submission
     const submission = new Submission({
@@ -264,22 +304,23 @@ const saveSubmission = async (discordUser, problem, codeBlock, review, score = n
       problemId: problem._id,
       code: codeBlock.code,
       language: codeBlock.language || 'unknown',
-      status: score && score >= 7 ? 'Accepted' : 'Pending',
+      status: isAccepted ? 'Accepted' : 'Pending',
       submissionTime: new Date(),
       feedback: review,
       reviewedBy: 'AI Assistant',
-      score: score || null
+      score: finalScore
     });
     
     await submission.save();
     
     // Update user statistics if the submission was accepted
-    if (submission.status === 'Accepted') {
+    if (isAccepted) {
       user.addSolvedProblem(problem._id, problem.difficulty, 0);
       await user.save();
+      logger.info(`User ${discordUser.username} solved problem ${problem.title} with score ${finalScore}`);
     }
     
-    logger.info(`Submission saved for user ${discordUser.username}, problem ${problem.title}`);
+    logger.info(`Submission saved for user ${discordUser.username}, problem ${problem.title}, score: ${finalScore}, status: ${submission.status}`);
     return submission;
     
   } catch (error) {

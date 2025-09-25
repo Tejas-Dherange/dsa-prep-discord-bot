@@ -57,6 +57,8 @@ export const getProblems = async (req, res) => {
       .skip((options.page - 1) * options.limit)
       .select('-__v -approaches.code'); // Exclude large fields for list view
 
+      console.log("✅✅✅✅ Problems",problems);
+      
     const total = await Problem.countDocuments(query);
 
     res.status(200).json({

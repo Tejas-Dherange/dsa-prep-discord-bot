@@ -1,6 +1,23 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiService } from '../services/api';
+import { 
+  Users, 
+  Puzzle, 
+  FileText, 
+  Zap, 
+  Target, 
+  BarChart3, 
+  Code2, 
+  Trophy, 
+  Activity, 
+  Settings, 
+  Rocket,
+  CheckCircle,
+  UserPlus,
+  RefreshCw,
+  Send
+} from 'lucide-react';
 
 const Dashboard: React.FC = () => {
   const { data: stats, isLoading, error, refetch } = useQuery({
@@ -45,9 +62,7 @@ const Dashboard: React.FC = () => {
             onClick={() => refetch()}
             className="btn-primary"
           >
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
+            <RefreshCw className="w-4 h-4 mr-2" />
             Try Again
           </button>
         </div>
@@ -71,8 +86,8 @@ const Dashboard: React.FC = () => {
                 <div className="text-2xl font-bold text-blue-600">{new Date().getDate()}</div>
                 <div className="text-sm text-gray-500">{new Date().toLocaleDateString('en-US', { month: 'short' })}</div>
               </div>
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center text-white text-2xl animate-float">
-                🚀
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center text-white animate-float">
+                <Rocket className="w-6 h-6" />
               </div>
             </div>
           </div>
@@ -84,7 +99,7 @@ const Dashboard: React.FC = () => {
         <StatCard
           title="Total Users"
           value={stats?.totalUsers || 0}
-          icon="👥"
+          icon={<Users className="w-6 h-6" />}
           color="blue"
           growth={stats?.userGrowth}
           subtitle="Registered members"
@@ -92,14 +107,14 @@ const Dashboard: React.FC = () => {
         <StatCard
           title="Total Problems"
           value={stats?.totalProblems || 0}
-          icon="🧩"
+          icon={<Puzzle className="w-6 h-6" />}
           color="emerald"
           subtitle="Available challenges"
         />
         <StatCard
           title="Total Submissions"
           value={stats?.totalSubmissions || 0}
-          icon="📝"
+          icon={<FileText className="w-6 h-6" />}
           color="purple"
           growth={stats?.submissionGrowth}
           subtitle="Code submissions"
@@ -119,7 +134,7 @@ const Dashboard: React.FC = () => {
         <StatCard
           title="Daily Solvers"
           value={stats?.problemsSolvedToday || 0}
-          icon="🎯"
+          icon={<Target className="w-6 h-6" />}
           color="green"
           subtitle="Problems solved today"
         />
@@ -144,7 +159,7 @@ const Dashboard: React.FC = () => {
 interface StatCardProps {
   title: string;
   value: number;
-  icon: string;
+  icon: React.ReactNode;
   color: 'blue' | 'emerald' | 'purple' | 'green' | 'orange' | 'red';
   growth?: number;
   subtitle?: string;
@@ -221,7 +236,7 @@ const ActiveUsersCard: React.FC<{ stats: any }> = ({ stats }) => (
         <p className="text-xs text-gray-500 mt-1">Discord presence</p>
       </div>
       <div className="icon-container bg-gradient-to-br from-orange-50 to-orange-100">
-        <span className="text-2xl">⚡</span>
+        <Zap className="w-6 h-6 text-orange-600" />
       </div>
     </div>
     
@@ -290,8 +305,14 @@ const DiscordGuildCard: React.FC<{ guildInfo: any }> = ({ guildInfo }) => (
           <p className="text-gray-200 mb-2">{guildInfo.description}</p>
         )}
         <div className="flex items-center space-x-4 text-sm text-gray-300">
-          <span>👥 {guildInfo.memberCount} members</span>
-          <span>🟢 Active community</span>
+          <span className="flex items-center">
+            <Users className="w-4 h-4 mr-1" /> 
+            {guildInfo.memberCount} members
+          </span>
+          <span className="flex items-center">
+            <div className="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
+            Active community
+          </span>
         </div>
       </div>
     </div>
@@ -302,7 +323,7 @@ const DiscordGuildCard: React.FC<{ guildInfo: any }> = ({ guildInfo }) => (
 const DifficultyDistributionCard: React.FC<{ stats: any[] }> = ({ stats }) => (
   <div className="card">
     <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-      <span className="mr-2">📊</span>
+      <BarChart3 className="w-5 h-5 mr-2 text-blue-600" />
       Problem Difficulty
     </h3>
     {stats && stats.length > 0 ? (
@@ -329,7 +350,7 @@ const DifficultyDistributionCard: React.FC<{ stats: any[] }> = ({ stats }) => (
         })}
       </div>
     ) : (
-      <EmptyState icon="📊" message="No difficulty data" />
+      <EmptyState icon={<BarChart3 className="w-12 h-12" />} message="No difficulty data" />
     )}
   </div>
 );
@@ -338,7 +359,7 @@ const DifficultyDistributionCard: React.FC<{ stats: any[] }> = ({ stats }) => (
 const LanguageStatsCard: React.FC<{ stats: any[] }> = ({ stats }) => (
   <div className="card">
     <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-      <span className="mr-2">💻</span>
+      <Code2 className="w-5 h-5 mr-2 text-purple-600" />
       Popular Languages
     </h3>
     {stats && stats.length > 0 ? (
@@ -356,7 +377,7 @@ const LanguageStatsCard: React.FC<{ stats: any[] }> = ({ stats }) => (
         ))}
       </div>
     ) : (
-      <EmptyState icon="💻" message="No language data" />
+      <EmptyState icon={<Code2 className="w-12 h-12" />} message="No language data" />
     )}
   </div>
 );
@@ -365,7 +386,7 @@ const LanguageStatsCard: React.FC<{ stats: any[] }> = ({ stats }) => (
 const TopSolversCard: React.FC<{ solvers: any[] }> = ({ solvers }) => (
   <div className="card">
     <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
-      <span className="mr-2">🏆</span>
+      <Trophy className="w-5 h-5 mr-2 text-yellow-600" />
       Top Performers
     </h3>
     {solvers && solvers.length > 0 ? (
@@ -400,7 +421,7 @@ const TopSolversCard: React.FC<{ solvers: any[] }> = ({ solvers }) => (
         ))}
       </div>
     ) : (
-      <EmptyState icon="🏆" message="No solvers yet" subtitle="Be the first to solve problems!" />
+      <EmptyState icon={<Trophy className="w-12 h-12" />} message="No solvers yet" subtitle="Be the first to solve problems!" />
     )}
   </div>
 );
@@ -409,7 +430,7 @@ const TopSolversCard: React.FC<{ solvers: any[] }> = ({ solvers }) => (
 const RecentActivityCard: React.FC<{ activities: any[] }> = ({ activities }) => (
   <div className="card">
     <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
-      <span className="mr-2">📱</span>
+      <Activity className="w-5 h-5 mr-2 text-green-600" />
       Recent Activity
     </h3>
     {activities && activities.length > 0 ? (
@@ -435,7 +456,7 @@ const RecentActivityCard: React.FC<{ activities: any[] }> = ({ activities }) => 
         ))}
       </div>
     ) : (
-      <EmptyState icon="📱" message="No recent activity" subtitle="Activity will appear here" />
+      <EmptyState icon={<Activity className="w-12 h-12" />} message="No recent activity" subtitle="Activity will appear here" />
     )}
   </div>
 );
@@ -444,35 +465,35 @@ const RecentActivityCard: React.FC<{ activities: any[] }> = ({ activities }) => 
 const QuickActionsPanel: React.FC = () => (
   <div className="card">
     <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
-      <span className="mr-2">⚡</span>
+      <Zap className="w-5 h-5 mr-2 text-yellow-600" />
       Quick Actions
     </h3>
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <QuickActionCard
         title="Sync Problems"
         description="Update from LeetCode"
-        icon="🔄"
+        icon={<RefreshCw className="w-8 h-8 text-blue-600" />}
         href="/problems"
         color="blue"
       />
       <QuickActionCard
         title="Manage Users"
         description="View all members"
-        icon="👥"
+        icon={<Users className="w-8 h-8 text-emerald-600" />}
         href="/users"
         color="emerald"
       />
       <QuickActionCard
         title="View Submissions"
         description="Check latest code"
-        icon="📝"
+        icon={<FileText className="w-8 h-8 text-purple-600" />}
         href="/submissions"
         color="purple"
       />
       <QuickActionCard
         title="Bot Settings"
         description="Configure behavior"
-        icon="⚙️"
+        icon={<Settings className="w-8 h-8 text-orange-600" />}
         href="/settings"
         color="orange"
       />
@@ -483,7 +504,7 @@ const QuickActionsPanel: React.FC = () => (
 interface QuickActionCardProps {
   title: string;
   description: string;
-  icon: string;
+  icon: React.ReactNode;
   href: string;
   color: string;
 }
@@ -491,7 +512,7 @@ interface QuickActionCardProps {
 const QuickActionCard: React.FC<QuickActionCardProps> = ({ title, description, icon, href, color }) => (
   <a href={href} className="quick-action-card group">
     <div className="text-center">
-      <div className="text-3xl mb-3 transform group-hover:scale-110 transition-transform duration-200">
+      <div className="flex justify-center mb-3 transform group-hover:scale-110 transition-transform duration-200">
         {icon}
       </div>
       <h4 className="font-semibold text-gray-900 group-hover:text-blue-700 transition-colors">
@@ -505,9 +526,9 @@ const QuickActionCard: React.FC<QuickActionCardProps> = ({ title, description, i
 );
 
 // Helper Components and Functions
-const EmptyState: React.FC<{ icon: string; message: string; subtitle?: string }> = ({ icon, message, subtitle }) => (
+const EmptyState: React.FC<{ icon: React.ReactNode; message: string; subtitle?: string }> = ({ icon, message, subtitle }) => (
   <div className="text-center py-8 text-gray-500">
-    <div className="text-4xl mb-3 opacity-50">{icon}</div>
+    <div className="flex justify-center mb-3 opacity-50">{icon}</div>
     <p className="font-medium">{message}</p>
     {subtitle && <p className="text-sm mt-1">{subtitle}</p>}
   </div>
@@ -526,10 +547,10 @@ const getLanguageColor = (index: number) => {
 
 const getActivityIcon = (type: string) => {
   switch (type) {
-    case 'user_joined': return '👋';
-    case 'problem_solved': return '✅';
-    case 'submission_made': return '📤';
-    default: return '📋';
+    case 'user_joined': return <UserPlus className="w-4 h-4" />;
+    case 'problem_solved': return <CheckCircle className="w-4 h-4" />;
+    case 'submission_made': return <Send className="w-4 h-4" />;
+    default: return <FileText className="w-4 h-4" />;
   }
 };
 

@@ -146,3 +146,132 @@ export const getDiscordBotStatus = async () => {
     };
   }
 };
+
+/**
+ * Create or find an existing thread for a user in a specific channel
+ * @param {Object} channel - Discord channel object
+ * @param {Object} user - Discord user object
+ * @param {string} threadType - Type of thread (e.g., 'hints', 'solution')
+ * @returns {Promise<Object|null>} - Thread object or null if failed
+ */
+export const createOrFindUserThread = async (channel, user, threadType) => {
+  try {
+    if (!channel || !user) {
+      throw new Error('Channel or user not provided');
+    }
+
+    const threadName = `${threadType} for ${user.username}`;
+    
+    // First, check if a thread already exists for this user
+    const existingThreads = await channel.threads.fetch();
+    const userThread = existingThreads.threads.find(thread => 
+      thread.name === threadName && !thread.archived
+    );
+
+    if (userThread) {
+      // Thread exists and is not archived, return it
+      return userThread;
+    }
+
+    // Create a new private thread
+    const newThread = await channel.threads.create({
+      name: threadName,
+      autoArchiveDuration: 1440, // 24 hours in minutes
+      type: 12, // Private thread
+      reason: `Automated ${threadType} thread for ${user.username}`,
+    });
+
+    // Add the user to the thread
+    await newThread.members.add(user.id);
+
+    console.log(`Created new ${threadType} thread for user ${user.username}`);
+    return newThread;
+
+  } catch (error) {
+    console.error(`Error creating/finding user thread:`, error);
+    return null;
+  }
+};
+
+/**
+ * Archive old threads that haven't been used recently
+ * @param {Object} channel - Discord channel object
+ * @param {number} hoursOld - Archive threads older than this many hours (default: 24)
+ * @returns {Promise<number>} - Number of threads archived
+ */
+export const archiveOldThreads = async (channel, hoursOld = 24) => {
+  try {
+    if (!channel) {
+      throw new Error('Channel not provided');
+    }
+
+    const threads = await channel.threads.fetch();
+    const cutoffTime = new Date(Date.now() - hoursOld * 60 * 60 * 1000);
+    let archivedCount = 0;
+
+    for (const thread of threads.threads.values()) {
+      if (thread.archived) continue;
+
+      // Check if the last message is older than cutoff
+      const messages = await thread.messages.fetch({ limit: 1 });
+      const lastMessage = messages.first();
+      
+      if (!lastMessage || lastMessage.createdAt < cutoffTime) {
+        await thread.setArchived(true);
+        archivedCount++;
+        console.log(`Archived old thread: ${thread.name}`);
+      }
+    }
+
+    return archivedCount;
+  } catch (error) {
+    console.error('Error archiving old threads:', error);
+    return 0;
+  }
+};
+
+/**
+ * Send a message to a specific thread
+ * @param {Object} thread - Discord thread object
+ * @param {string|Object} content - Message content (string or embed object)
+ * @returns {Promise<Object|null>} - Message object or null if failed
+ */
+export const sendThreadMessage = async (thread, content) => {
+  try {
+    if (!thread) {
+      throw new Error('Thread not provided');
+    }
+
+    const message = await thread.send(content);
+    return message;
+  } catch (error) {
+    console.error('Error sending thread message:', error);
+    return null;
+  }
+};
+
+/**
+ * Get user's active thread in a channel
+ * @param {Object} channel - Discord channel object
+ * @param {Object} user - Discord user object
+ * @param {string} threadType - Type of thread to look for
+ * @returns {Promise<Object|null>} - Thread object or null if not found
+ */
+export const getUserActiveThread = async (channel, user, threadType) => {
+  try {
+    if (!channel || !user) {
+      return null;
+    }
+
+    const threadName = `${threadType} for ${user.username}`;
+    const threads = await channel.threads.fetch();
+    
+    return threads.threads.find(thread => 
+      thread.name === threadName && !thread.archived
+    ) || null;
+
+  } catch (error) {
+    console.error('Error getting user active thread:', error);
+    return null;
+  }
+};
