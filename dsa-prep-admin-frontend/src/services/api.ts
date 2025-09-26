@@ -38,6 +38,12 @@ class ApiService {
     return response.data;
   }
 
+  async triggerDailyChallenge(): Promise<ApiResponse<{ message: string; timestamp: string }>> {
+    const response: AxiosResponse<ApiResponse<{ message: string; timestamp: string }>> = 
+      await this.api.post('/dashboard/daily-challenge/trigger');
+    return response.data;
+  }
+
   // User endpoints
   async getUsers(params?: {
     page?: number;

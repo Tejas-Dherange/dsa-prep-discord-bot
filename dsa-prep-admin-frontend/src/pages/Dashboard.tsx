@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiService } from '../services/api';
+import { useToast } from '../contexts/ToastContext';
 import { 
   Users, 
   Puzzle, 
@@ -16,7 +17,8 @@ import {
   CheckCircle,
   UserPlus,
   RefreshCw,
-  Send
+  Send,
+  Calendar
 } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
@@ -320,7 +322,7 @@ const DiscordGuildCard: React.FC<{ guildInfo: any }> = ({ guildInfo }) => (
 );
 
 // Difficulty Distribution Card
-const DifficultyDistributionCard: React.FC<{ stats: any[] }> = ({ stats }) => (
+const DifficultyDistributionCard: React.FC<{ stats: any[] | undefined }> = ({ stats }) => (
   <div className="card">
     <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
       <BarChart3 className="w-5 h-5 mr-2 text-blue-600" />
@@ -356,7 +358,7 @@ const DifficultyDistributionCard: React.FC<{ stats: any[] }> = ({ stats }) => (
 );
 
 // Language Stats Card
-const LanguageStatsCard: React.FC<{ stats: any[] }> = ({ stats }) => (
+const LanguageStatsCard: React.FC<{ stats: any[] | undefined }> = ({ stats }) => (
   <div className="card">
     <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
       <Code2 className="w-5 h-5 mr-2 text-purple-600" />
@@ -383,7 +385,7 @@ const LanguageStatsCard: React.FC<{ stats: any[] }> = ({ stats }) => (
 );
 
 // Top Solvers Card
-const TopSolversCard: React.FC<{ solvers: any[] }> = ({ solvers }) => (
+const TopSolversCard: React.FC<{ solvers: any[] | undefined }> = ({ solvers }) => (
   <div className="card">
     <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
       <Trophy className="w-5 h-5 mr-2 text-yellow-600" />
@@ -427,7 +429,7 @@ const TopSolversCard: React.FC<{ solvers: any[] }> = ({ solvers }) => (
 );
 
 // Recent Activity Card
-const RecentActivityCard: React.FC<{ activities: any[] }> = ({ activities }) => (
+const RecentActivityCard: React.FC<{ activities: any[] | undefined }> = ({ activities }) => (
   <div className="card">
     <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
       <Activity className="w-5 h-5 mr-2 text-green-600" />
@@ -462,44 +464,93 @@ const RecentActivityCard: React.FC<{ activities: any[] }> = ({ activities }) => 
 );
 
 // Quick Actions Panel
-const QuickActionsPanel: React.FC = () => (
-  <div className="card">
-    <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
-      <Zap className="w-5 h-5 mr-2 text-yellow-600" />
-      Quick Actions
-    </h3>
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <QuickActionCard
-        title="Sync Problems"
-        description="Update from LeetCode"
-        icon={<RefreshCw className="w-8 h-8 text-blue-600" />}
-        href="/problems"
-        color="blue"
-      />
-      <QuickActionCard
-        title="Manage Users"
-        description="View all members"
-        icon={<Users className="w-8 h-8 text-emerald-600" />}
-        href="/users"
-        color="emerald"
-      />
-      <QuickActionCard
-        title="View Submissions"
-        description="Check latest code"
-        icon={<FileText className="w-8 h-8 text-purple-600" />}
-        href="/submissions"
-        color="purple"
-      />
-      <QuickActionCard
-        title="Bot Settings"
-        description="Configure behavior"
-        icon={<Settings className="w-8 h-8 text-orange-600" />}
-        href="/settings"
-        color="orange"
-      />
+const QuickActionsPanel: React.FC = () => {
+  const [isTriggering, setIsTriggering] = useState(false);
+  const { success, error } = useToast();
+
+  const handleTriggerDailyChallenge = async () => {
+    if (isTriggering) return;
+    
+    setIsTriggering(true);
+    try {
+      const response = await apiService.triggerDailyChallenge();
+      if (response.success) {
+        success(
+          'Daily Challenge Posted!', 
+          'The daily coding challenge has been successfully posted to Discord.'
+        );
+      } else {
+        throw new Error(response.message || 'Failed to trigger daily challenge');
+      }
+    } catch (err) {
+      console.error('Error triggering daily challenge:', err);
+      error(
+        'Failed to Post Challenge', 
+        err instanceof Error ? err.message : 'An error occurred while posting the daily challenge'
+      );
+    } finally {
+      setIsTriggering(false);
+    }
+  };
+
+  return (
+    <div className="card">
+      <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+        <Zap className="w-5 h-5 mr-2 text-yellow-600" />
+        Quick Actions
+      </h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        {/* Daily Challenge Test Button */}
+        <div className="quick-action-card group cursor-pointer" onClick={handleTriggerDailyChallenge}>
+          <div className="text-center">
+            <div className="flex justify-center mb-3 transform group-hover:scale-110 transition-transform duration-200">
+              {isTriggering ? (
+                <div className="w-8 h-8 border-4 border-orange-200 border-t-orange-600 rounded-full animate-spin"></div>
+              ) : (
+                <Calendar className="w-8 h-8 text-orange-600" />
+              )}
+            </div>
+            <h4 className="font-semibold text-gray-900 group-hover:text-orange-700 transition-colors">
+              {isTriggering ? 'Posting...' : 'Test Daily Challenge'}
+            </h4>
+            <p className="text-sm text-gray-500 mt-1 group-hover:text-orange-600 transition-colors">
+              {isTriggering ? 'Please wait...' : 'Post to Discord now'}
+            </p>
+          </div>
+        </div>
+
+        <QuickActionCard
+          title="Sync Problems"
+          description="Update from LeetCode"
+          icon={<RefreshCw className="w-8 h-8 text-blue-600" />}
+          href="/problems"
+          color="blue"
+        />
+        <QuickActionCard
+          title="Manage Users"
+          description="View all members"
+          icon={<Users className="w-8 h-8 text-emerald-600" />}
+          href="/users"
+          color="emerald"
+        />
+        <QuickActionCard
+          title="View Submissions"
+          description="Check latest code"
+          icon={<FileText className="w-8 h-8 text-purple-600" />}
+          href="/submissions"
+          color="purple"
+        />
+        <QuickActionCard
+          title="Bot Settings"
+          description="Configure behavior"
+          icon={<Settings className="w-8 h-8 text-gray-600" />}
+          href="/settings"
+          color="gray"
+        />
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 interface QuickActionCardProps {
   title: string;
